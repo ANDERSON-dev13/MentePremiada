@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sua Sorte - Gerador de Jogos</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Sua Sorte <i class="fas fa-dice"></i></h1>
+            <p>Criado por: Anderson Araujo</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="game-selection">
+            <button id="lotofacil-btn">Lotofácil</button>
+            <button id="megasena-btn">Mega-Sena</button>
+            <button id="quina-btn">Quina</button>
+            <button id="lotomania-btn">Lotomania</button>
+            <button id="duplasena-btn">Dupla Sena</button>
+        </section>
+
+        <section class="game-config">
+            <h2 id="game-type-title">Lotofácil</h2>
+            <div class="grid-container">
+                <div id="grid-numbers" class="cartela"></div>
+            </div>
+            <div class="controls">
+                <label for="number-to-generate">Quantos números gerar:</label>
+                <input type="number" id="number-to-generate" min="1" max="50">
+                <label>
+                    <input type="checkbox" id="distribution-toggle"> Usar distribuição de cores
+                </label>
+                <label>
+                    <input type="checkbox" id="statistical-mode"> Modo Estatístico
+                </label>
+                <button id="generate-btn">Gerar Jogo <i class="fas fa-play"></i></button>
+                <button id="clear-btn">Limpar Tabela <i class="fas fa-trash"></i></button>
+            </div>
+            <div id="loading" class="loading hidden">Gerando...</div>
+            <div id="result" class="results">
+                <h3>Jogos Gerados:</h3>
+            </div>
+        </section>
+    </main>
+
+        ...
+    <footer>
+        <p>&copy; 2025 Anderson Araujo. Todos os direitos reservados.</p>
+    </footer>
+
+    <script src="script.js"></script> <!-- ESSA LINHA ESTAVA FALTANDO -->
+</body>
+</html>
