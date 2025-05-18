@@ -108,6 +108,11 @@ main {
     transform: scale(1.1);
 }
 
+.number-box.tesla {
+    border-color: #00CED1;
+    box-shadow: 0 0 5px #00CED1;
+}
+
 .controls {
     margin: 20px 0;
     display: flex;
@@ -118,6 +123,29 @@ main {
 .controls label {
     font-size: 1em;
     color: #e0e0e0;
+    position: relative;
+}
+
+.controls label .tooltip {
+    visibility: hidden;
+    width: 200px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.controls label:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
 }
 
 .controls input[type="number"] {
