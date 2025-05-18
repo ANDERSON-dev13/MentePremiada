@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sua Sorte - Gerador de Jogos</title>
+    <title>Mente Premiada</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <header>
         <div class="header-content">
-            <h1>Sua Sorte <i class="fas fa-dice"></i></h1>
+            <h1>Mente Premiada <i class="fas fa-brain"></i></h1>
             <p>Criado por: Anderson Araujo</p>
         </div>
     </header>
@@ -35,12 +36,23 @@
                 <input type="number" id="number-to-generate" min="1" max="50">
                 <label>
                     <input type="checkbox" id="distribution-toggle"> Usar distribuição de cores
+                    <span class="tooltip">Diferencia números com terminações 1-5 (azul) e 6-0 (dourado).</span>
                 </label>
                 <label>
                     <input type="checkbox" id="statistical-mode"> Modo Estatístico
+                    <span class="tooltip">Gera jogos com base em padrões estatísticos reais (pares/ímpares, soma).</span>
+                </label>
+                <label>
+                    <input type="checkbox" id="tesla-mode"> Ativar Energia 3•6•9
+                    <span class="tooltip">Prioriza números relacionados a 3, 6, 9 (numerologia).</span>
+                </label>
+                <label>
+                    <input type="checkbox" id="mente-premiada-mode"> Filtro Mente Premiada
+                    <span class="tooltip">Combina estatísticas, numerologia e números quentes para maximizar chances.</span>
                 </label>
                 <button id="generate-btn">Gerar Jogo <i class="fas fa-play"></i></button>
                 <button id="clear-btn">Limpar Tabela <i class="fas fa-trash"></i></button>
+                <button id="export-btn">Exportar como PDF <i class="fas fa-download"></i></button>
             </div>
             <div id="loading" class="loading hidden">Gerando...</div>
             <div id="result" class="results">
@@ -49,11 +61,9 @@
         </section>
     </main>
 
-        ...
     <footer>
-        <p>&copy; 2025 Anderson Araujo. Todos os direitos reservados.</p>
+        <p>© 2025 Anderson Araujo. Todos os direitos reservados.</p>
     </footer>
-
-    <script src="script.js"></script> <!-- ESSA LINHA ESTAVA FALTANDO -->
+    <script src="script.js"></script>
 </body>
 </html>
