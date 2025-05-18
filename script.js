@@ -13,8 +13,11 @@ document.addEventListener("DOMContentLoaded", () => {
         numberInput: document.getElementById("number-to-generate"),
         usePattern: document.getElementById("distribution-toggle"),
         useStats: document.getElementById("statistical-mode"),
+        teslaMode: document.getElementById("tesla-mode"),
+        mentePremiadaMode: document.getElementById("mente-premiada-mode"),
         generateBtn: document.getElementById("generate-btn"),
         clearBtn: document.getElementById("clear-btn"),
+        exportBtn: document.getElementById("export-btn"),
         loading: document.getElementById("loading")
     };
 
@@ -38,11 +41,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let gameType = "lotofacil";
 
     const games = {
-        lotofacil: { range: 25, min: 15, max: 20, sumRange: [160, 240], evenOdd: [4, 11], lineCol: true, maxAttempts: 200 },
-        megasena: { range: 60, min: 6, max: 15, sumRange: [90, 260], evenOdd: [1, 5], lineCol: false, maxAttempts: 50 },
-        quina: { range: 80, min: 5, max: 15, sumRange: [70, 310], evenOdd: [1, 5], lineCol: false, maxAttempts: 50 },
-        lotomania: { range: 100, min: 50, max: 50, sumRange: [1700, 2900], evenOdd: [18, 32], lineCol: false, maxAttempts: 50 },
-        duplasena: { range: 50, min: 6, max: 15, sumRange: [90, 260], evenOdd: [1, 5], lineCol: false, maxAttempts: 50 }
+        lotofacil: { range: 25, min: 15, max: 20, sumRange: [160, 240], evenOdd: [4, 11], lineCol: true, maxAttempts: 200, hotNumbers: [1, 3, 5, 10, 15], coldNumbers: [2, 4, 6] },
+        megasena: { range: 60, min: 6, max: 15, sumRange: [90, 260], evenOdd: [1, 5], lineCol: false, maxAttempts: 50, hotNumbers: [5, 23, 33], coldNumbers: [1, 2, 4] },
+        quina: { range: 80, min: 5, max: 15, sumRange: [70, 310], evenOdd: [1, 5], lineCol: false, maxAttempts: 50, hotNumbers: [4, 15, 30], coldNumbers: [1, 2, 3] },
+        lotomania: { range: 100, min: 50, max: 50, sumRange: [1700, 2900], evenOdd: [18, 32], lineCol: false, maxAttempts: 50, hotNumbers: [5, 25, 50], coldNumbers: [1, 2, 3] },
+        duplasena: { range: 50, min: 6, max: 15, sumRange: [90, 260], evenOdd: [1, 5], lineCol: false, maxAttempts: 50, hotNumbers: [3, 15, 30], coldNumbers: [1, 2, 4] }
     };
 
     const colorGroups = {
@@ -51,72 +54,69 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     function loadSavedGames() {
-        const saved = localStorage.getItem(`sua-sorte-${gameType}`);
+        const saved = localStorage.getItem(`mente-premiada-${gameType}`);
         if (saved) {
             elements.resultDisplay.innerHTML = saved;
         }
     }
 
     function saveGames() {
-        localStorage.setItem(`sua-sorte-${gameType}`, elements.resultDisplay.innerHTML);
-    }
-
-    function generateNumberGrid() {
-        elements.numberGrid.innerHTML = "";
-        const range = games[gameType].range;
-        for (let i = 1; i <= range; i++) {
-            const numElement = document.createElement("div");
-            numElement.classList.add("number-box");
-            numElement.dataset.number = i;
-            numElement.textContent = i.toString().padStart(2, "0");
-            if (elements.usePattern.checked) {
-                const termination = i % 10;
-                if (colorGroups.group1.includes(termination)) {
-                    numElement.style.backgroundColor = "#1E90FF";
-                } else if (colorGroups.group2.includes(termination)) {
-                    numElement.style.backgroundColor = "#FFD700";
-                }
-            }
-            elements.numberGrid.appendChild(numElement);
-        }
-    }
-
-    function highlightGeneratedNumbers(numbers) {
-        const numberBoxes = document.querySelectorAll(".number-box");
-        numberBoxes.forEach(box => box.classList.remove("generated"));
-        numbers.forEach(num => {
-            const box = document.querySelector(`.number-box[data-number="${num}"]`);
-            if (box) box.classList.add("generated");
-        });
+        localStorage.setItem(`mente-premiada-${gameType}`, elements.resultDisplay.innerHTML);
     }
 
     function updateNumberInputRange() {
-        const game = games[gameType];
-        elements.numberInput.min = game.min;
-        elements.numberInput.max = game.max;
-        elements.numberInput.value = game.min;
+        const { min, max } = games[gameType];
+        elements.numberInput.min = min;
+        elements.numberInput.max = max;
+        elements.numberInput.value = min;
     }
 
     function updateGameIndicator() {
-        const title = {
+        const name = {
             lotofacil: "Lotofácil",
             megasena: "Mega-Sena",
             quina: "Quina",
             lotomania: "Lotomania",
             duplasena: "Dupla Sena"
         }[gameType];
-        elements.gameTypeTitle.textContent = title;
+        elements.gameTypeTitle.textContent = name;
+    }
+
+    function generateNumberGrid() {
+        const total = games[gameType].range;
+        elements.numberGrid.innerHTML = "";
+        for (let i = 1; i <= total; i++) {
+            const num = i.toString().padStart(2, "0");
+            const div = document.createElement("div");
+            div.classList.add("number-box");
+            div.textContent = num;
+            div.dataset.number = num;
+            if (elements.usePattern.checked) {
+                const termination = i % 10;
+                if (colorGroups.group1.includes(termination)) {
+                    div.style.backgroundColor = "#1E90FF";
+                } else if (colorGroups.group2.includes(termination)) {
+                    div.style.backgroundColor = "#FFD700";
+                }
+            }
+            elements.numberGrid.appendChild(div);
+        }
     }
 
     function countEvenOdd(numbers) {
-        const pares = numbers.filter(num => num % 2 === 0).length;
-        const impares = numbers.length - pares;
-        return { pares, impares };
+        const pares = numbers.filter(n => n % 2 === 0).length;
+        return { pares, impares: numbers.length - pares };
     }
 
-    function isSumInRange(numbers, [min, max]) {
-        const sum = numbers.reduce((a, b) => a + b, 0);
-        return sum >= min && sum <= max;
+    function getSum(numbers) {
+        return numbers.reduce((a, b) => a + b, 0);
+    }
+
+    function isTeslaValid(numbers) {
+        return numbers.filter(num =>
+            num % 3 === 0 || num.toString().includes("3") ||
+            num.toString().includes("6") || num.toString().includes("9")
+        ).length >= 1;
     }
 
     function isLineColumnBalanced(numbers) {
@@ -145,10 +145,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return linhas.every(q => q >= 3 && q <= 4) && colunas.every(q => q >= 3 && q <= 4);
     }
 
-    function isValidGame(numbers) {
+    function isStatisticallyValid(numbers) {
         const { pares, impares } = countEvenOdd(numbers);
         const { evenOdd, sumRange } = games[gameType];
-        const sum = numbers.reduce((a, b) => a + b, 0);
+        const sum = getSum(numbers);
         const lineColBalanced = isLineColumnBalanced(numbers);
         const valid = (
             pares >= evenOdd[0] &&
@@ -174,34 +174,26 @@ document.addEventListener("DOMContentLoaded", () => {
             [21, 22, 23, 24, 25]
         ];
         let selected = [];
-        let evenCount = 0;
-        let oddCount = 0;
         let attempts = 0;
         const maxInnerAttempts = 20;
 
         while (attempts++ < maxInnerAttempts) {
             selected = [];
-            evenCount = 0;
-            oddCount = 0;
-
             for (let i = 0; i < 5; i++) {
                 const rowNums = matriz[i];
                 const count = Math.floor(Math.random() * 2) + 3;
                 const shuffledRow = rowNums.sort(() => Math.random() - 0.5);
                 const rowSelection = shuffledRow.slice(0, count);
                 selected.push(...rowSelection);
-                rowSelection.forEach(num => {
-                    if (num % 2 === 0) evenCount++;
-                    else oddCount++;
-                });
             }
 
             selected = [...new Set(selected)];
 
             while (selected.length < total) {
                 const remaining = Array.from({ length: 25 }, (_, i) => i + 1).filter(n => !selected.includes(n));
-                const sum = selected.reduce((a, b) => a + b, 0);
-                const needsEven = evenCount < 5 || (evenCount < total / 2 && Math.random() > 0.5);
+                const sum = getSum(selected);
+                const { pares } = countEvenOdd(selected);
+                const needsEven = pares < 5 || (pares < total / 2 && Math.random() > 0.5);
                 let candidates = needsEven
                     ? remaining.filter(n => n % 2 === 0)
                     : remaining.filter(n => n % 2 !== 0);
@@ -215,35 +207,117 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (candidates.length === 0) candidates = remaining;
                 const n = candidates[Math.floor(Math.random() * candidates.length)];
                 selected.push(n);
-                if (n % 2 === 0) evenCount++;
-                else oddCount++;
             }
 
-            if (isValidGame(selected)) {
+            if (isStatisticallyValid(selected)) {
                 return selected.sort((a, b) => a - b);
             }
         }
 
-        return generateRandomGame(total, 25);
+        return generateRandom(total, 25);
     }
 
-    function generateRandomGame(total, range) {
-        const selected = [];
-        const allNumbers = Array.from({ length: range }, (_, i) => i + 1);
-        while (selected.length < total) {
-            const n = allNumbers[Math.floor(Math.random() * allNumbers.length)];
-            if (!selected.includes(n)) selected.push(n);
+    function generateRandom(total, range) {
+        const selected = new Set();
+        while (selected.size < total) {
+            const n = Math.floor(Math.random() * range) + 1;
+            selected.add(n);
         }
-        return selected.sort((a, b) => a - b);
+        return Array.from(selected).sort((a, b) => a - b);
+    }
+
+    function applyMentePremiadaFilter(numbers, total, range) {
+        const { hotNumbers, coldNumbers } = games[gameType];
+        let result = [...numbers];
+
+        // Garantir pelo menos 1 número quente
+        const hasHot = result.some(n => hotNumbers.includes(n));
+        if (!hasHot) {
+            const hotNum = hotNumbers[Math.floor(Math.random() * hotNumbers.length)];
+            const idx = Math.floor(Math.random() * result.length);
+            result[idx] = hotNum;
+            result = [...new Set(result)].sort((a, b) => a - b);
+            while (result.length < total) {
+                const n = Math.floor(Math.random() * range) + 1;
+                if (!result.includes(n)) result.push(n);
+            }
+            result.sort((a, b) => a - b);
+        }
+
+        // Evitar números frios, se possível
+        result = result.map(n => {
+            if (coldNumbers.includes(n) && Math.random() > 0.3) {
+                let newNum;
+                do {
+                    newNum = Math.floor(Math.random() * range) + 1;
+                } while (result.includes(newNum) || coldNumbers.includes(newNum));
+                return newNum;
+            }
+            return n;
+        }).sort((a, b) => a - b);
+
+        return result;
+    }
+
+    function applyTeslaFilter(numbers, total, range) {
+        let result = [...numbers];
+        if (!isTeslaValid(result)) {
+            const teslaNum = Array.from({ length: range }, (_, i) => i + 1)
+                .filter(n => (n % 3 === 0 || n.toString().includes("3") || n.toString().includes("6") || n.toString().includes("9")))[0];
+            const idx = Math.floor(Math.random() * result.length);
+            result[idx] = teslaNum;
+            result = [...new Set(result)].sort((a, b) => a - b);
+            while (result.length < total) {
+                const n = Math.floor(Math.random() * range) + 1;
+                if (!result.includes(n)) result.push(n);
+            }
+            result.sort((a, b) => a - b);
+        }
+        return result;
+    }
+
+    function generateGameWithFilters(total, range) {
+        let numbers = generateRandom(total, range);
+        let attempts = 0;
+        const maxAttempts = games[gameType].maxAttempts;
+
+        while (attempts++ < maxAttempts) {
+            // Passo 1: Geração Base (aleatória ou balanceada para Lotofácil)
+            if (elements.useStats.checked && gameType === "lotofacil") {
+                numbers = generateBalancedLotofacil(total);
+            } else {
+                numbers = generateRandom(total, range);
+            }
+
+            // Passo 2: Aplicar Filtro Mente Premiada (se ativo)
+            if (elements.mentePremiadaMode.checked) {
+                numbers = applyMentePremiadaFilter(numbers, total, range);
+            }
+
+            // Passo 3: Aplicar Energia 3•6•9 (se ativo)
+            if (elements.teslaMode.checked) {
+                numbers = applyTeslaFilter(numbers, total, range);
+            }
+
+            // Passo 4: Validar estatísticas (se Modo Estatístico estiver ativo)
+            const isStatsValid = !elements.useStats.checked || isStatisticallyValid(numbers);
+            const isTeslaValidCheck = !elements.teslaMode.checked || isTeslaValid(numbers);
+
+            if (isStatsValid && isTeslaValidCheck) {
+                return numbers;
+            }
+        }
+
+        return numbers; // Retorna o último conjunto gerado se não atender a todos os critérios
     }
 
     async function generateGame() {
+        console.log("Botão Gerar Jogo clicado");
         const total = parseInt(elements.numberInput.value);
         const { range, min, max, maxAttempts } = games[gameType];
+        console.log(`Total: ${total}, Range: ${range}, GameType: ${gameType}`);
 
-        console.log(`Gerando jogo para ${gameType}, total: ${total}, range: ${range}, min: ${min}, max: ${max}`);
-
-        if (total < min || total > max || isNaN(total)) {
+        if (isNaN(total) || total < min || total > max) {
             alert(`Por favor, insira um número entre ${min} e ${max}.`);
             console.log(`Entrada inválida: total=${total}, min=${min}, max=${max}`);
             return;
@@ -252,112 +326,134 @@ document.addEventListener("DOMContentLoaded", () => {
         elements.loading.classList.remove("hidden");
         elements.generateBtn.disabled = true;
 
-        let selected1 = [];
-        let selected2 = [];
-        let attempts = 0;
-        let usedFallback = false;
+        let result = [];
+        let result2 = [];
 
-        while (attempts++ < maxAttempts) {
-            if ((gameType === "lotofacil" || gameType === "duplasena") && elements.useStats.checked && !usedFallback) {
-                if (gameType === "lotofacil") {
-                    selected1 = generateBalancedLotofacil(total);
-                } else {
-                    selected1 = generateRandomGame(total, range);
-                    selected2 = generateRandomGame(total, range).filter(n => !selected1.includes(n));
-                    while (selected2.length < total) {
-                        const n = generateRandomGame(1, range)[0];
-                        if (!selected1.includes(n) && !selected2.includes(n)) selected2.push(n);
-                    }
-                    selected2.sort((a, b) => a - b);
-                }
-            } else {
-                selected1 = generateRandomGame(total, range);
-                if (gameType === "duplasena") {
-                    selected2 = generateRandomGame(total, range).filter(n => !selected1.includes(n));
-                    while (selected2.length < total) {
-                        const n = generateRandomGame(1, range)[0];
-                        if (!selected1.includes(n) && !selected2.includes(n)) selected2.push(n);
-                    }
-                    selected2.sort((a, b) => a - b);
-                }
-            }
+        // Gerar o primeiro sorteio
+        result = generateGameWithFilters(total, range);
 
-            const isValid = !elements.useStats.checked || (isValidGame(selected1) && (gameType !== "duplasena" || isValidGame(selected2)));
-            if (isValid) {
-                console.log(`Jogo gerado com sucesso na tentativa ${attempts}: ${selected1}${gameType === "duplasena" ? `, 2º sorteio: ${selected2}` : ""}`);
-                break;
+        // Gerar o segundo sorteio para Dupla Sena
+        if (gameType === "duplasena") {
+            result2 = generateGameWithFilters(total, range).filter(n => !result.includes(n));
+            while (result2.length < total) {
+                const n = generateRandom(1, range)[0];
+                if (!result.includes(n) && !result2.includes(n)) result2.push(n);
             }
-
-            if ((gameType === "lotofacil" || gameType === "duplasena") && attempts > maxAttempts / 2 && !usedFallback) {
-                usedFallback = true;
-                attempts = 0;
-                console.log(`Usando fallback para ${gameType}: ignorando balanceamento de linhas/colunas.`);
-            }
+            result2.sort((a, b) => a - b);
         }
 
         elements.loading.classList.add("hidden");
         elements.generateBtn.disabled = false;
 
-        if (attempts >= maxAttempts) {
-            const div = document.createElement("div");
-            div.classList.add("game-result");
-            div.innerHTML = `<p><strong>Erro:</strong> Não foi possível gerar um jogo válido após ${maxAttempts} tentativas. Tente desativar o Modo Estatístico ou gerar novamente.</p>`;
-            elements.resultDisplay.appendChild(div);
-            saveGames();
-            console.log(`Falha ao gerar jogo após ${maxAttempts} tentativas.`);
+        const { pares, impares } = countEvenOdd(result);
+        const soma = getSum(result);
+        const hotCount = result.filter(n => games[gameType].hotNumbers.includes(n)).length;
+        const coldCount = result.filter(n => games[gameType].coldNumbers.includes(n)).length;
+        const teslaCount = result.filter(n => n % 3 === 0 || n.toString().includes("3") || n.toString().includes("6") || n.toString().includes("9")).length;
+
+        const box = document.createElement("div");
+        box.classList.add("game-result");
+        box.innerHTML = `
+            <p><strong>${gameType.toUpperCase()}:</strong> ${result.map(n => n.toString().padStart(2, '0')).join(", ")}</p>
+            <p>🔢 Pares: ${pares} | Ímpares: ${impares}</p>
+            <p>➕ Soma: ${soma}</p>
+            ${games[gameType].lineCol && elements.useStats.checked ? "<p>📊 Linhas/Colunas balanceadas: ✅</p>" : ""}
+            <p>🔥 Números Quentes: ${hotCount} | ❄️ Números Frios: ${coldCount}</p>
+            <p>⚡ Números 3•6•9: ${teslaCount}</p>
+        `;
+
+        if (gameType === "duplasena") {
+            const { pares: pares2, impares: impares2 } = countEvenOdd(result2);
+            const soma2 = getSum(result2);
+            const hotCount2 = result2.filter(n => games[gameType].hotNumbers.includes(n)).length;
+            const coldCount2 = result2.filter(n => games[gameType].coldNumbers.includes(n)).length;
+            const teslaCount2 = result2.filter(n => n % 3 === 0 || n.toString().includes("3") || n.toString().includes("6") || n.toString().includes("9")).length;
+            box.innerHTML += `
+                <p><strong>2º Sorteio:</strong> ${result2.map(n => n.toString().padStart(2, '0')).join(", ")}</p>
+                <p>🔢 Pares: ${pares2} | Ímpares: ${impares2}</p>
+                <p>➕ Soma: ${soma2}</p>
+                <p>🔥 Números Quentes: ${hotCount2} | ❄️ Números Frios: ${coldCount2}</p>
+                <p>⚡ Números 3•6•9: ${teslaCount2}</p>
+            `;
+        }
+
+        elements.resultDisplay.appendChild(box);
+
+        document.querySelectorAll(".number-box").forEach(b => {
+            b.classList.remove("generated");
+            b.classList.remove("tesla");
+        });
+        const allNumbers = [...result, ...(gameType === "duplasena" ? result2 : [])];
+        allNumbers.forEach(num => {
+            const el = document.querySelector(`.number-box[data-number="${num.toString().padStart(2, "0")}"]`);
+            if (el) {
+                el.classList.add("generated");
+                if (num % 3 === 0 || num.toString().includes("3") || num.toString().includes("6") || num.toString().includes("9")) {
+                    el.classList.add("tesla");
+                }
+            }
+        });
+
+        saveGames();
+        console.log(`Jogo gerado: ${result}${gameType === "duplasena" ? `, 2º sorteio: ${result2}` : ""}`);
+    }
+
+    async function exportToPDF() {
+        console.log("Botão Exportar PDF clicado");
+        const element = document.getElementById("result");
+        if (!element || element.innerHTML.trim() === "<h3>Jogos Gerados:</h3>") {
+            alert("Por favor, gere pelo menos um jogo antes de exportar.");
+            console.log("Nenhum jogo gerado para exportação.");
             return;
         }
 
-        const { pares: pares1, impares: impares1 } = countEvenOdd(selected1);
-        const sum1 = selected1.reduce((a, b) => a + b, 0);
-        const div = document.createElement("div");
-        div.classList.add("game-result");
-        div.innerHTML = `
-            <p><strong>${gameType.toUpperCase()}:</strong> ${selected1.map(n => n.toString().padStart(2, '0')).join(", ")}</p>
-            <p>🔢 Pares: ${pares1} | Ímpares: ${impares1}</p>
-            <p>➕ Soma: ${sum1}</p>
-            ${games[gameType].lineCol && !usedFallback ? "<p>📊 Linhas/Colunas balanceadas: ✅</p>" : ""}
-        `;
-        if (gameType === "duplasena") {
-            const { pares: pares2, impares: impares2 } = countEvenOdd(selected2);
-            const sum2 = selected2.reduce((a, b) => a + b, 0);
-            div.innerHTML += `
-                <p><strong>2º Sorteio:</strong> ${selected2.map(n => n.toString().padStart(2, '0')).join(", ")}</p>
-                <p>🔢 Pares: ${pares2} | Ímpares: ${impares2}</p>
-                <p>➕ Soma: ${sum2}</p>
-            `;
+        elements.loading.classList.remove("hidden");
+        elements.exportBtn.disabled = true;
+
+        const opt = {
+            margin: 1,
+            filename: `Mente_Premiada_${gameType}_${new Date().toISOString().split('T')[0]}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        try {
+            await html2pdf().from(element).set(opt).save();
+            console.log("PDF exportado com sucesso.");
+        } catch (error) {
+            console.error("Erro ao exportar PDF:", error);
+            alert("Ocorreu um erro ao exportar o PDF. Verifique o console para detalhes.");
+        } finally {
+            elements.loading.classList.add("hidden");
+            elements.exportBtn.disabled = false;
         }
-        elements.resultDisplay.appendChild(div);
-        saveGames();
-        highlightGeneratedNumbers([...selected1, ...(gameType === "duplasena" ? selected2 : [])]);
     }
 
     Object.keys(elements.buttons).forEach(type => {
         elements.buttons[type].addEventListener("click", () => {
             gameType = type;
-            updateNumberInputRange();
             updateGameIndicator();
+            updateNumberInputRange();
             generateNumberGrid();
             loadSavedGames();
         });
     });
 
-    elements.generateBtn.addEventListener("click", () => {
-        console.log("Botão Gerar Jogo clicado");
-        generateGame();
-    });
-
+    elements.generateBtn.addEventListener("click", generateGame);
     elements.clearBtn.addEventListener("click", () => {
         elements.resultDisplay.innerHTML = "";
-        localStorage.removeItem(`sua-sorte-${gameType}`);
-        const numberBoxes = document.querySelectorAll(".number-box");
-        numberBoxes.forEach(box => box.classList.remove("generated"));
+        localStorage.removeItem(`mente-premiada-${gameType}`);
+        document.querySelectorAll(".number-box").forEach(b => {
+            b.classList.remove("generated");
+            b.classList.remove("tesla");
+        });
     });
-
+    elements.exportBtn.addEventListener("click", exportToPDF);
     elements.usePattern.addEventListener("change", generateNumberGrid);
 
-    updateNumberInputRange();
     updateGameIndicator();
+    updateNumberInputRange();
     generateNumberGrid();
     loadSavedGames();
 });
